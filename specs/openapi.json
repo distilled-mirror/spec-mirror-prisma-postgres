@@ -15541,8 +15541,7 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string",
-                            "description": "The unique identifier for this backup"
+                            "type": "string"
                           },
                           "backupType": {
                             "type": "string",
@@ -15550,16 +15549,13 @@
                               "full",
                               "incremental",
                               "differential"
-                            ],
-                            "description": "Type of backup"
+                            ]
                           },
                           "createdAt": {
-                            "type": "string",
-                            "description": "Timestamp when the backup was created"
+                            "type": "string"
                           },
                           "size": {
-                            "type": "number",
-                            "description": "Total file size (in MiB) of gzipped backup files"
+                            "type": "number"
                           },
                           "status": {
                             "type": "string",
@@ -15568,8 +15564,7 @@
                               "completed",
                               "failed",
                               "unknown"
-                            ],
-                            "description": "Status of backup instance"
+                            ]
                           },
                           "type": {
                             "type": "string",
@@ -23566,8 +23561,7 @@
                         "pattern": "^(db_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
                       },
                       "backupId": {
-                        "type": "string",
-                        "description": "The unique identifier for this backup"
+                        "type": "string"
                       }
                     },
                     "required": [
