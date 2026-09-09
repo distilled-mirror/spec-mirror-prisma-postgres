@@ -13861,7 +13861,7 @@
                       "inherit"
                     ],
                     "default": "us-east-1",
-                    "description": "Region for the database. Use \"inherit\" to use the project default database region."
+                    "description": "Use \"inherit\" to use the project's default region (falls back to the default database's region for projects without one)."
                   },
                   "name": {
                     "type": "string",
@@ -23543,7 +23543,8 @@
                       "ap-southeast-1",
                       "inherit"
                     ],
-                    "default": "us-east-1"
+                    "default": "us-east-1",
+                    "description": "Use \"inherit\" to use the project's default region (falls back to the default database's region for projects without one)."
                   },
                   "name": {
                     "type": "string",
