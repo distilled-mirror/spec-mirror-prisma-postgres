@@ -3282,6 +3282,39 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation failed (e.g. `skipCodeUpload` without an active promoted deployment, or the app is not attached to a Branch — env-var resolution requires a Branch).",
             "content": {
@@ -6594,6 +6627,39 @@
           },
           "404": {
             "description": "Service not found, or the service's attached Branch has been deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10152,7 +10218,7 @@
           }
         ],
         "summary": "Update a build",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRecords progress on a build. Any holder of the workspace token may patch any field — the webhook, the CI run and Composer each report the part of a deploy they can see, and the token is the boundary. Reaching `running` stamps `startedAt` and reaching a terminal state stamps `finishedAt`, both only if unset, so re-reporting the same state does not move the clock.\n\n`projectId`, `branchId`, `deployedUrl` and `applicationTopologyContentHash` are fill-only: a reporter that resolves them partway through a deploy sets them here, but a value already recorded cannot be changed and the attempt is a conflict. Sending the value already recorded is accepted and changes nothing. An anchor must belong to the caller's workspace and agree with the anchors the build already carries, so a branch from another project is refused.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRecords progress on a build. Any holder of the workspace token may patch any field — the webhook, the CI run and Composer each report the part of a deploy they can see, and the token is the boundary. Reaching `running` stamps `startedAt` and reaching a terminal state stamps `finishedAt`, both only if unset, so re-reporting the same state does not move the clock. Once a build has finished, its state no longer changes: a later report updates the other fields and leaves the state as the finishing report set it.\n\n`projectId`, `branchId`, `deployedUrl` and `applicationTopologyContentHash` are fill-only: a reporter that resolves them partway through a deploy sets them here, but a value already recorded cannot be changed and the attempt is a conflict. Sending the value already recorded is accepted and changes nothing. An anchor must belong to the caller's workspace and agree with the anchors the build already carries, so a branch from another project is refused.",
         "x-prisma-stability": "experimental",
         "requestBody": {
           "content": {
