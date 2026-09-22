@@ -82,6 +82,112 @@
     "schemas": {}
   },
   "paths": {
+    "/v1/agent-approvals/{approvalId}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "The approval's current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "approved",
+                        "approved_window",
+                        "denied",
+                        "expired",
+                        "consumed"
+                      ]
+                    },
+                    "expiresAt": {
+                      "type": "string"
+                    },
+                    "windowExpiresAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "decidedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "hint": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "expiresAt",
+                    "windowExpiresAt",
+                    "decidedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such approval for this agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getV1Agent-approvalsByApprovalId",
+        "tags": [
+          "Agents"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "approvalId",
+            "required": true
+          }
+        ],
+        "summary": "Poll an approval",
+        "description": "Reports where an approval stands, so an agent holding an approval_required response can wait for the sponsor's decision and retry. Only the agent the approval belongs to can read it."
+      }
+    },
     "/v1/apps": {
       "get": {
         "responses": {
@@ -18444,6 +18550,10 @@
                   "logicalId": {
                     "type": "string",
                     "pattern": "^[a-z0-9][-_a-z0-9]*$"
+                  },
+                  "workspaceId": {
+                    "type": "string",
+                    "pattern": "^(wksp_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
                   }
                 }
               }
@@ -25363,10 +25473,11 @@
                           "properties": {
                             "type": {
                               "type": "string",
-                              "enum": [
+                              "x-extensible-enum": [
                                 "oauth",
                                 "service_token",
-                                "management_token"
+                                "management_token",
+                                "agent_token"
                               ]
                             },
                             "id": {
@@ -26747,6 +26858,9 @@
                         "nextCursor",
                         "hasMore"
                       ]
+                    },
+                    "hint": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -26826,6 +26940,15 @@
               "pattern": "^(wksp_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
             },
             "required": true
+          },
+          {
+            "in": "query",
+            "name": "repository",
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\w.-]+\\/[\\w.-]+$"
+            },
+            "required": false
           }
         ],
         "summary": "List SCM installations for a workspace",
@@ -26863,6 +26986,15 @@
                         "installUrl": {
                           "type": "string",
                           "format": "uri"
+                        },
+                        "alreadyLinked": {
+                          "type": "boolean"
+                        },
+                        "accountLogin": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -27052,7 +27184,7 @@
         ],
         "parameters": [],
         "summary": "Create an SCM App installation intent",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nCreates an installation intent for the given workspace and returns a provider-specific URL that the user opens to install the SCM app. Currently only `github` is supported.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nCreates an installation intent for the given workspace. If an existing installation can be proven to belong to the caller it is linked immediately (`alreadyLinked`); otherwise the response carries a URL the user opens to install the SCM app. Pass `repository` (owner/name) so an installation that already covers it but cannot be linked automatically is detected and explained in `hint`. Currently only `github` is supported.",
         "x-prisma-stability": "experimental",
         "requestBody": {
           "content": {
@@ -27069,6 +27201,10 @@
                   "workspaceId": {
                     "type": "string",
                     "pattern": "^(wksp_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                  },
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^[\\w.-]+\\/[\\w.-]+$"
                   }
                 },
                 "required": [
@@ -27373,6 +27509,9 @@
                         "createdAt",
                         "updatedAt"
                       ]
+                    },
+                    "hint": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -27980,6 +28119,9 @@
                         "createdAt",
                         "updatedAt"
                       ]
+                    },
+                    "hint": {
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -28211,6 +28353,179 @@
         ],
         "summary": "Get list of workspaces",
         "description": "Returns the list of workspaces the current token can access."
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "The created workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "type": {
+                          "type": "string",
+                          "const": "workspace"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "url",
+                        "name",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Workspace integration tokens cannot create workspaces; a user-attributable actor is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "operationId": "postV1Workspaces",
+        "tags": [
+          "[Experimental]"
+        ],
+        "parameters": [],
+        "summary": "Create a workspace",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nCreates a new free-plan workspace owned by the authenticated user. For agent tokens the workspace is created for the agent's sponsor, and the agent's permission policy treats this as an admin action — under the default policy the sponsor approves it first.",
+        "x-prisma-stability": "experimental",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/workspaces/{id}": {
