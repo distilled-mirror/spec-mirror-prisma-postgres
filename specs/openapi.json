@@ -10209,7 +10209,7 @@
             }
           },
           "409": {
-            "description": "A fill-only field already holds a different value.",
+            "description": "A field that can only be set once already holds a different value.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10324,7 +10324,7 @@
           }
         ],
         "summary": "Update a build",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRecords progress on a build. Any holder of the workspace token may patch any field — the webhook, the CI run and Composer each report the part of a deploy they can see, and the token is the boundary. Reaching `running` stamps `startedAt` and reaching a terminal state stamps `finishedAt`, both only if unset, so re-reporting the same state does not move the clock. Once a build has finished, its state no longer changes: a later report updates the other fields and leaves the state as the finishing report set it.\n\n`projectId`, `branchId`, `deployedUrl` and `applicationTopologyContentHash` are fill-only: a reporter that resolves them partway through a deploy sets them here, but a value already recorded cannot be changed and the attempt is a conflict. Sending the value already recorded is accepted and changes nothing. An anchor must belong to the caller's workspace and agree with the anchors the build already carries, so a branch from another project is refused.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRecords progress on a build. Any holder of the workspace token may patch any field — the webhook, the CI run and Composer each report the part of a deploy they can see, and the token is the boundary. Reaching `running` stamps `startedAt` and reaching a terminal state stamps `finishedAt`, both only if unset, so re-reporting the same state does not move the clock. Once a build has finished, its state no longer changes: a later report updates the other fields and leaves the state as the finishing report set it.\n\n`projectId`, `branchId`, `deployedUrl` and `applicationTopologyContentHash` can each be set once and never changed: a reporter that resolves them partway through a deploy sets them here, but a value already recorded cannot be changed and the attempt is a conflict. Sending the value already recorded is accepted and changes nothing. `projectId` and `branchId` must belong to the caller's workspace, and a branch must belong to the build's project, so a branch from another project is refused.",
         "x-prisma-stability": "experimental",
         "requestBody": {
           "content": {
@@ -10370,24 +10370,24 @@
                   "projectId": {
                     "type": "string",
                     "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                    "description": "Project the build targets. Fill-only: a reporter that learns the project partway through a deploy may set it, but a value already recorded cannot be changed."
+                    "description": "Project the build targets. Can be set once and never changed: a reporter that learns the project partway through a deploy may set it, but a value already recorded cannot be changed."
                   },
                   "branchId": {
                     "type": "string",
                     "pattern": "^(br_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                    "description": "Branch the build targets. Fill-only, like `projectId`."
+                    "description": "Branch the build targets. Can be set once and never changed, like `projectId`."
                   },
                   "deployedUrl": {
                     "type": "string",
                     "format": "uri",
                     "maxLength": 2000,
-                    "description": "Where the deployed app can be reached. Fill-only, like the anchors."
+                    "description": "Where the deployed app can be reached. Can be set once and never changed, like `projectId`."
                   },
                   "applicationTopologyContentHash": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200,
-                    "description": "Content hash of the application topology this run deploys, as submitted to the application-topology endpoint. A value match, never a reference: equal hashes identify the same graph. Fill-only, like the anchors."
+                    "description": "Content hash of the application topology this run deploys, as submitted to the application-topology endpoint. A value match, never a reference: equal hashes identify the same graph. Can be set once and never changed, like `projectId`."
                   }
                 }
               }
