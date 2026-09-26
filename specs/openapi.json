@@ -253,6 +253,12 @@
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
+                          },
+                          "logicalId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -265,7 +271,8 @@
                           "branchId",
                           "latestDeploymentId",
                           "appEndpointDomain",
-                          "createdAt"
+                          "createdAt",
+                          "logicalId"
                         ]
                       }
                     },
@@ -466,6 +473,16 @@
           },
           {
             "in": "query",
+            "name": "logicalId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "maxLength": 255,
+              "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+            }
+          },
+          {
+            "in": "query",
             "name": "branchId",
             "schema": {
               "anyOf": [
@@ -556,6 +573,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -568,7 +591,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -679,7 +703,7 @@
             }
           },
           "409": {
-            "description": "An app with the same `displayName` already exists on the resolved branch. The body includes the existing app's id, name, and branch git name.",
+            "description": "An app already occupies the slot on the resolved branch, by `displayName` or by `logicalId`. The body includes the existing app's id, name, branch git name, and logical id; `conflict` says which attribute clashed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -703,6 +727,21 @@
                         },
                         "branchGitName": {
                           "type": "string"
+                        },
+                        "conflict": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "logicalId"
+                          ],
+                          "description": "Which attribute of the existing app clashed."
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The existing app's logical id."
                         }
                       },
                       "required": [
@@ -711,6 +750,39 @@
                         "existingAppId",
                         "name",
                         "branchGitName"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
                       ]
                     }
                   },
@@ -794,7 +866,7 @@
         ],
         "parameters": [],
         "summary": "Create app",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `POST /v1/services` instead.\n\nCreates a new app under the specified project. The `projectId` is required in the request body. The app is placed in the given region, or the project's default region if omitted (falling back to us-east-1). Returns `409 Conflict` with the existing app's id, name, and branch if an app with the same name already exists on the resolved branch.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `POST /v1/services` instead.\n\nCreates a new app under the specified project. The `projectId` is required in the request body. The app is placed in the given region, or the project's default region if omitted (falling back to us-east-1). Returns `409 Conflict` when an app already occupies the slot on the resolved branch, either by name or by `logicalId`; the body includes the existing app's id, name, branch, and logical id, and `conflict` says which attribute clashed. The name is checked first. `logicalId` cannot be combined with `branchGitName`; pass `branchId` instead.",
         "deprecated": true,
         "x-prisma-stability": "experimental",
         "requestBody": {
@@ -837,6 +909,12 @@
                   "projectId": {
                     "type": "string",
                     "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   }
                 },
                 "required": [
@@ -912,6 +990,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -924,7 +1008,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -1150,6 +1235,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -1162,7 +1253,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -1241,6 +1333,72 @@
           },
           "404": {
             "description": "App not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "An app with the same `logicalId` already exists on the branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1355,7 +1513,7 @@
           }
         ],
         "summary": "Update app",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `PATCH /v1/services/{serviceId}` instead.\n\nUpdates the display name of an app.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `PATCH /v1/services/{serviceId}` instead.\n\nUpdates the display name, logical id, or branch of an app. `logicalId` cannot be combined with `branchId` or `branchGitName` in one request; move the app first, then set its `logicalId`.",
         "deprecated": true,
         "x-prisma-stability": "experimental",
         "requestBody": {
@@ -1368,6 +1526,12 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 256
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   },
                   "branchId": {
                     "type": [
@@ -1746,6 +1910,39 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation failed (e.g. malformed app ID or missing deployment ID).",
             "content": {
@@ -1989,6 +2186,39 @@
           },
           "409": {
             "description": "The deployment cannot be made live (e.g. it has no runnable artifact or is mid-teardown and cannot reach a running state).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2883,6 +3113,39 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "App has no promoted deployment.",
             "content": {
@@ -3639,6 +3902,12 @@
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
+                          },
+                          "logicalId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -3651,7 +3920,8 @@
                           "branchId",
                           "latestDeploymentId",
                           "appEndpointDomain",
-                          "createdAt"
+                          "createdAt",
+                          "logicalId"
                         ]
                       }
                     },
@@ -3852,6 +4122,16 @@
           },
           {
             "in": "query",
+            "name": "logicalId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "maxLength": 255,
+              "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+            }
+          },
+          {
+            "in": "query",
             "name": "branchId",
             "schema": {
               "anyOf": [
@@ -3941,6 +4221,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -3953,7 +4239,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -4064,7 +4351,7 @@
             }
           },
           "409": {
-            "description": "A service with the same `displayName` already exists on the resolved branch. The body includes the existing service's id, name, and branch git name.",
+            "description": "A service already occupies the slot on the resolved branch, by `displayName` or by `logicalId`. The body includes the existing service's id, name, branch git name, and logical id; `conflict` says which attribute clashed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4088,6 +4375,21 @@
                         },
                         "branchGitName": {
                           "type": "string"
+                        },
+                        "conflict": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "logicalId"
+                          ],
+                          "description": "Which attribute of the existing app clashed."
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The existing app's logical id."
                         }
                       },
                       "required": [
@@ -4096,6 +4398,39 @@
                         "existingAppId",
                         "name",
                         "branchGitName"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
                       ]
                     }
                   },
@@ -4179,7 +4514,7 @@
         ],
         "parameters": [],
         "summary": "Create service",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nCreates a new service under the specified project. The `projectId` is required in the request body. The service is placed in the given region, or the project's default region if omitted (falling back to us-east-1). Returns `409 Conflict` with the existing service's id, name, and branch if a service with the same name already exists on the resolved branch.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nCreates a new service under the specified project. The `projectId` is required in the request body. The service is placed in the given region, or the project's default region if omitted (falling back to us-east-1). Returns `409 Conflict` when a service already occupies the slot on the resolved branch, either by name or by `logicalId`; the body includes the existing service's id, name, branch, and logical id, and `conflict` says which attribute clashed. The name is checked first. `logicalId` cannot be combined with `branchGitName`; pass `branchId` instead.",
         "x-prisma-stability": "experimental",
         "requestBody": {
           "content": {
@@ -4221,6 +4556,12 @@
                   "projectId": {
                     "type": "string",
                     "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   }
                 },
                 "required": [
@@ -4296,6 +4637,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -4308,7 +4655,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -4533,6 +4881,12 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -4545,7 +4899,8 @@
                         "branchId",
                         "latestDeploymentId",
                         "appEndpointDomain",
-                        "createdAt"
+                        "createdAt",
+                        "logicalId"
                       ]
                     }
                   },
@@ -4624,6 +4979,72 @@
           },
           "404": {
             "description": "Service not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A service with the same `logicalId` already exists on the branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4738,7 +5159,7 @@
           }
         ],
         "summary": "Update service",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nUpdates the display name of a service.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nUpdates the display name, logical id, or branch of a service. `logicalId` cannot be combined with `branchId` or `branchGitName` in one request; move the service first, then set its `logicalId`.",
         "x-prisma-stability": "experimental",
         "requestBody": {
           "content": {
@@ -4750,6 +5171,12 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 256
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   },
                   "branchId": {
                     "type": [
@@ -5127,6 +5554,39 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation failed (e.g. malformed service ID or missing deployment ID).",
             "content": {
@@ -5369,6 +5829,39 @@
           },
           "409": {
             "description": "The deployment cannot be made live (e.g. it has no runnable artifact or is mid-teardown and cannot reach a running state).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6230,6 +6723,39 @@
           },
           "409": {
             "description": "Hostname already registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8099,6 +8625,12 @@
                               "null"
                             ],
                             "pattern": "^(br_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                          },
+                          "logicalId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -8110,7 +8642,8 @@
                           "status",
                           "createdAt",
                           "project",
-                          "branchId"
+                          "branchId",
+                          "logicalId"
                         ]
                       }
                     },
@@ -8145,6 +8678,39 @@
           },
           "401": {
             "description": "Missing or invalid authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8211,6 +8777,16 @@
               "type": "string",
               "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
               "description": "Filter buckets by project ID"
+            }
+          },
+          {
+            "in": "query",
+            "name": "logicalId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "maxLength": 255,
+              "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
             }
           },
           {
@@ -8305,6 +8881,12 @@
                             "null"
                           ],
                           "pattern": "^(br_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -8316,7 +8898,8 @@
                         "status",
                         "createdAt",
                         "project",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -8458,6 +9041,72 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "A bucket with the same `logicalId` already exists on the branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "operationId": "postV1Buckets",
@@ -8493,6 +9142,12 @@
                     "type": "string",
                     "minLength": 1,
                     "description": "Git name of the branch to associate the bucket with. Mutually exclusive with branchId."
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   }
                 },
                 "required": [
@@ -8569,6 +9224,12 @@
                             "null"
                           ],
                           "pattern": "^(br_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -8580,7 +9241,8 @@
                         "status",
                         "createdAt",
                         "project",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -8656,6 +9318,39 @@
                 }
               }
             }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "operationId": "getV1BucketsByBucketId",
@@ -8675,6 +9370,316 @@
         ],
         "summary": "Get bucket",
         "description": "Returns the bucket with the given ID."
+      },
+      "patch": {
+        "responses": {
+          "200": {
+            "description": "Updated the bucket.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^(bkt_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "type": {
+                          "type": "string",
+                          "const": "bucket"
+                        },
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "providerName": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^(proj_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                            },
+                            "url": {
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "url",
+                            "name"
+                          ]
+                        },
+                        "branchId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "pattern": "^(br_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "url",
+                        "name",
+                        "providerName",
+                        "status",
+                        "createdAt",
+                        "project",
+                        "branchId",
+                        "logicalId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bucket or branch not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A bucket with the same `logicalId` already exists on the branch, the bucket's `logicalId` is already taken on the target branch of a move, or the target branch changed during the move.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed (e.g. no field given, an empty display name, or `logicalId` combined with a branch move).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "operationId": "patchV1BucketsByBucketId",
+        "tags": [
+          "Buckets"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "bucketId",
+            "schema": {
+              "type": "string",
+              "pattern": "^(bkt_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Update bucket",
+        "description": "Updates the display name, logical id, or branch of the bucket with the given ID. The display name is a label only: the provider bucket name, the objects, and the access keys do not change. `logicalId` cannot be combined with `branchId` or `branchGitName` in one request; move the bucket first, then set its `logicalId`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "New display name for the bucket. A label only: the provider bucket name does not change."
+                  },
+                  "branchId": {
+                    "type": "string",
+                    "pattern": "^(br_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
+                    "description": "ID of the branch to move the bucket to. Mutually exclusive with branchGitName."
+                  },
+                  "branchGitName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Git name of the branch to move the bucket to; the branch is created when it does not exist. Mutually exclusive with branchId."
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "delete": {
         "responses": {
@@ -8716,6 +9721,39 @@
           },
           "404": {
             "description": "Bucket with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8882,6 +9920,39 @@
           },
           "404": {
             "description": "Bucket with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9123,6 +10194,39 @@
                 }
               }
             }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "operationId": "postV1BucketsByBucketIdKeys",
@@ -9212,6 +10316,39 @@
           },
           "404": {
             "description": "Bucket key not found or does not belong to the given bucket.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -13372,6 +14509,12 @@
                               "string",
                               "null"
                             ]
+                          },
+                          "logicalId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -13387,7 +14530,8 @@
                           "project",
                           "region",
                           "source",
-                          "branchId"
+                          "branchId",
+                          "logicalId"
                         ]
                       }
                     },
@@ -13519,6 +14663,16 @@
               "type": "string",
               "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
               "description": "Filter databases by project ID"
+            }
+          },
+          {
+            "in": "query",
+            "name": "logicalId",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+              "maxLength": 255,
+              "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
             }
           },
           {
@@ -13844,6 +14998,12 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -13859,7 +15019,8 @@
                         "project",
                         "region",
                         "source",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -14001,6 +15162,72 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "A database with the same `logicalId` already exists on the branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "operationId": "postV1Databases",
@@ -14009,7 +15236,7 @@
         ],
         "parameters": [],
         "summary": "Create database",
-        "description": "Creates a new database in the specified project.",
+        "description": "Creates a new database in the specified project. `logicalId` cannot be combined with `branchGitName`; pass `branchId` instead.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -14118,6 +15345,12 @@
                     ],
                     "minLength": 1,
                     "description": "Git name of the Branch to attach the database to; the Branch is created when it does not exist. Mutually exclusive with branchId. Omit to attach to the project's default Branch. Every database belongs to a Branch, so null is rejected."
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   }
                 },
                 "required": [
@@ -14416,6 +15649,12 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -14431,7 +15670,8 @@
                         "project",
                         "region",
                         "source",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -14846,6 +16086,12 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -14861,7 +16107,8 @@
                         "project",
                         "region",
                         "source",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -14970,6 +16217,72 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "A database with the same `logicalId` already exists on the branch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "operationId": "patchV1DatabasesByDatabaseId",
@@ -14988,7 +16301,7 @@
           }
         ],
         "summary": "Update database",
-        "description": "Updates the database with the given ID.",
+        "description": "Updates the database with the given ID. `logicalId` cannot be combined with `branchId` or `branchGitName` in one request; move the database first, then set its `logicalId`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -15015,6 +16328,12 @@
                     ],
                     "minLength": 1,
                     "description": "Git name of the Branch to move the database to; the Branch is created when it does not exist. Mutually exclusive with branchId. Every database belongs to a Branch, so null (detach) is rejected."
+                  },
+                  "logicalId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                    "maxLength": 255,
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
                   }
                 }
               }
@@ -16176,6 +17495,12 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -16191,7 +17516,8 @@
                         "project",
                         "region",
                         "source",
-                        "branchId"
+                        "branchId",
+                        "logicalId"
                       ]
                     }
                   },
@@ -18284,6 +19610,12 @@
                                 "null"
                               ]
                             },
+                            "logicalId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
                             "apiKeys": {
                               "type": "array",
                               "items": {
@@ -18455,6 +19787,7 @@
                             "region",
                             "source",
                             "branchId",
+                            "logicalId",
                             "apiKeys",
                             "connectionString",
                             "directConnection"
@@ -18483,6 +19816,72 @@
           },
           "401": {
             "description": "Missing or invalid authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A project with the same `logicalId` already exists in the workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -19003,6 +20402,39 @@
           },
           "404": {
             "description": "Project with the specified ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -22989,6 +24421,12 @@
                               "string",
                               "null"
                             ]
+                          },
+                          "logicalId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -23004,7 +24442,8 @@
                           "project",
                           "region",
                           "source",
-                          "branchId"
+                          "branchId",
+                          "logicalId"
                         ]
                       }
                     },
@@ -23433,6 +24872,12 @@
                             "null"
                           ]
                         },
+                        "logicalId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "apiKeys": {
                           "type": "array",
                           "items": {
@@ -23605,6 +25050,7 @@
                         "region",
                         "source",
                         "branchId",
+                        "logicalId",
                         "apiKeys",
                         "connectionString",
                         "directConnection"
@@ -23685,7 +25131,73 @@
             }
           },
           "403": {
-            "description": "Project does not belong to the service token’s workspace.",
+            "description": "The actor or agent permission policy does not allow database creation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
