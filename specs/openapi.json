@@ -26985,7 +26985,7 @@
                           "properties": {
                             "type": {
                               "type": "string",
-                              "x-extensible-enum": [
+                              "enum": [
                                 "oauth",
                                 "service_token",
                                 "management_token",
