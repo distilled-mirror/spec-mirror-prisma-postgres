@@ -1365,7 +1365,7 @@
             }
           },
           "409": {
-            "description": "An app with the same `logicalId` already exists on the branch.",
+            "description": "An app with the same `logicalId` already exists on the branch, or the app is already bound to a different `logicalId`. Set `logicalId` to null first to change it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1528,10 +1528,13 @@
                     "maxLength": 256
                   },
                   "logicalId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
                     "maxLength": 255,
-                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource. Send null to clear the logical id."
                   },
                   "branchId": {
                     "type": [
@@ -5011,7 +5014,7 @@
             }
           },
           "409": {
-            "description": "A service with the same `logicalId` already exists on the branch.",
+            "description": "A service with the same `logicalId` already exists on the branch, or the service is already bound to a different `logicalId`. Set `logicalId` to null first to change it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5173,10 +5176,13 @@
                     "maxLength": 256
                   },
                   "logicalId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
                     "maxLength": 255,
-                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource. Send null to clear the logical id."
                   },
                   "branchId": {
                     "type": [
@@ -9531,7 +9537,7 @@
             }
           },
           "409": {
-            "description": "A bucket with the same `logicalId` already exists on the branch, the bucket's `logicalId` is already taken on the target branch of a move, or the target branch changed during the move.",
+            "description": "A bucket with the same `logicalId` already exists on the branch, the bucket is already bound to a different `logicalId` (set it to null first to change it), the bucket's `logicalId` is already taken on the target branch of a move, or the target branch changed during the move.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9670,10 +9676,13 @@
                     "description": "Git name of the branch to move the bucket to; the branch is created when it does not exist. Mutually exclusive with branchId."
                   },
                   "logicalId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
                     "maxLength": 255,
-                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource. Send null to clear the logical id."
                   }
                 }
               }
@@ -12053,237 +12062,6 @@
             }
           }
         }
-      }
-    },
-    "/v1/builds/{buildId}/logs": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Build log stream (newline-delimited JSON; one `BuildLogNdjsonLine` per line).",
-            "content": {
-              "application/x-ndjson": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "const": "log"
-                        },
-                        "text": {
-                          "type": "string"
-                        },
-                        "level": {
-                          "type": "string",
-                          "enum": [
-                            "info",
-                            "error"
-                          ]
-                        },
-                        "source": {
-                          "type": "string",
-                          "enum": [
-                            "runner",
-                            "stdout",
-                            "stderr"
-                          ]
-                        },
-                        "step": {
-                          "type": "string"
-                        },
-                        "cursor": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "text",
-                        "level",
-                        "source",
-                        "cursor"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "const": "terminal"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "end",
-                            "error"
-                          ]
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "retryable": {
-                          "type": "boolean"
-                        },
-                        "cursor": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "kind",
-                        "code",
-                        "message",
-                        "retryable",
-                        "cursor"
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authorization token.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "hint": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "code",
-                        "message"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Build not found, or the caller's workspace does not own it (indistinguishable).",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "hint": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "code",
-                        "message"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "hint": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "code",
-                        "message"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "operationId": "getV1BuildsByBuildIdLogs",
-        "tags": [
-          "[Experimental]"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "buildId",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            },
-            "required": true
-          },
-          {
-            "in": "query",
-            "name": "follow",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          },
-          {
-            "in": "query",
-            "name": "cursor",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "summary": "Stream build logs",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nStreams the full build log for a build as newline-delimited JSON (`application/x-ndjson`). Each line is a JSON object discriminated by `type`: `log` (a build output line) or `terminal` (end-of-stream marker with a `cursor` for resumption). The default is a finite dump that ends once the stream is drained; pass `follow=true` to keep the connection open for an in-flight build, and `cursor` to resume from a prior terminal cursor.",
-        "x-prisma-stability": "experimental"
       }
     },
     "/v1/domains/{domainId}": {
@@ -16219,7 +15997,7 @@
             }
           },
           "409": {
-            "description": "A database with the same `logicalId` already exists on the branch.",
+            "description": "A database with the same `logicalId` already exists on the branch, or the database is already bound to a different `logicalId`. Set `logicalId` to null first to change it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16330,10 +16108,13 @@
                     "description": "Git name of the Branch to move the database to; the Branch is created when it does not exist. Mutually exclusive with branchId. Every database belongs to a Branch, so null (detach) is rejected."
                   },
                   "logicalId": {
-                    "type": "string",
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
                     "maxLength": 255,
-                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource."
+                    "description": "Declared identity of the resource, unique within its branch. Set by the tool that declares the resource. Send null to clear the logical id."
                   }
                 }
               }
