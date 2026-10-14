@@ -18129,7 +18129,7 @@
             }
           },
           "409": {
-            "description": "The deployment must be stopped before it can be deleted.",
+            "description": "The deployment must be stopped before it can be deleted, or one of its custom domains could not be moved to the live deployment.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18536,7 +18536,7 @@
             }
           },
           "409": {
-            "description": "The deployment must be running or provisioning to be stopped.",
+            "description": "The deployment must be running or provisioning to be stopped, or one of its custom domains could not be moved to the live deployment.",
             "content": {
               "application/json": {
                 "schema": {
