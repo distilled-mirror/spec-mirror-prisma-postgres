@@ -27197,6 +27197,20 @@
                           "name": {
                             "type": "string"
                           },
+                          "scope": {
+                            "type": "string",
+                            "enum": [
+                              "workspace",
+                              "project"
+                            ]
+                          },
+                          "projectId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^(proj_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                          },
                           "valueHint": {
                             "type": "string"
                           },
@@ -27216,6 +27230,8 @@
                           "id",
                           "type",
                           "name",
+                          "scope",
+                          "projectId",
                           "valueHint",
                           "createdAt"
                         ]
@@ -27347,6 +27363,20 @@
                         "name": {
                           "type": "string"
                         },
+                        "scope": {
+                          "type": "string",
+                          "enum": [
+                            "workspace",
+                            "project"
+                          ]
+                        },
+                        "projectId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "pattern": "^(proj_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
                         "valueHint": {
                           "type": "string"
                         },
@@ -27369,6 +27399,8 @@
                         "id",
                         "type",
                         "name",
+                        "scope",
+                        "projectId",
                         "valueHint",
                         "createdAt",
                         "value"
@@ -27417,6 +27449,39 @@
           },
           "404": {
             "description": "Workspace with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -27505,6 +27570,22 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "projectId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^(proj_)?([cC][^\\s-]{8,}|[a-z0-9]+)$",
+                    "description": "Access only this project. Omit or pass null for Full Workspace access."
+                  },
+                  "expiresAt": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Expiry in the future. Defaults to 90 days; null opts out of expiry."
+                  },
                   "name": {
                     "type": "string",
                     "minLength": 1,
@@ -27626,7 +27707,7 @@
       "post": {
         "responses": {
           "201": {
-            "description": "Minted a short-lived workspace service token.",
+            "description": "Minted a short-lived project-scoped service token.",
             "content": {
               "application/json": {
                 "schema": {
@@ -27735,8 +27816,8 @@
           "[Experimental]"
         ],
         "parameters": [],
-        "summary": "Exchange a GitHub Actions OIDC token for a workspace service token",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nVerifies the GitHub Actions OIDC token and mints a short-lived workspace service token. The caller must request the token with audience `prisma-cloud`. Any verification failure returns a generic 401 — the response never reveals whether a repository is connected.",
+        "summary": "Exchange a GitHub Actions OIDC token for a project-scoped service token",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nVerifies the GitHub Actions OIDC token and mints a short-lived project-scoped service token. The caller must request the token with audience `prisma-cloud`. Any verification failure returns a generic 401 — the response never reveals whether a repository is connected.",
         "security": [],
         "x-prisma-stability": "experimental",
         "requestBody": {
