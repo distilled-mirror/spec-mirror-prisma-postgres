@@ -3150,7 +3150,7 @@
             }
           },
           "422": {
-            "description": "App has no promoted deployment.",
+            "description": "App has no promoted deployment or the workspace TXT ownership proof is missing.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3184,6 +3184,39 @@
           },
           "429": {
             "description": "Domain quota exceeded or rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DNS ownership verification is temporarily unavailable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6794,7 +6827,7 @@
             }
           },
           "422": {
-            "description": "Service has no promoted deployment.",
+            "description": "Service has no promoted deployment or the workspace TXT ownership proof is missing.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6828,6 +6861,39 @@
           },
           "429": {
             "description": "Domain quota exceeded or rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DNS ownership verification is temporarily unavailable.",
             "content": {
               "application/json": {
                 "schema": {
