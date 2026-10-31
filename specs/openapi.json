@@ -19922,7 +19922,7 @@
       "get": {
         "operationId": "getV1Domain-ownershipsByDomainOwnershipId",
         "summary": "Get a domain ownership",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nReturns a domain the workspace has proved it owns.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nReturns a domain ownership, verified or pending.",
         "responses": {
           "200": {
             "description": "The domain ownership.",
@@ -19945,7 +19945,7 @@
                         "workspaceId": {
                           "type": "string",
                           "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                          "description": "The workspace that proved it owns the domain."
+                          "description": "The workspace the domain ownership belongs to."
                         },
                         "domain": {
                           "type": "string"
@@ -19977,9 +19977,36 @@
                             "ttl"
                           ]
                         },
-                        "verifiedAt": {
+                        "status": {
                           "type": "string",
-                          "format": "date-time"
+                          "enum": [
+                            "pending",
+                            "verified",
+                            "grandfathered"
+                          ],
+                          "description": "`verified` when the last answer from DNS carried the workspace's value, and `pending` when it did not. `grandfathered` is a custom domain that existed before domain ownerships were checked; it stays grandfathered without the record until DNS carries another workspace's value for the domain. A lookup that gets no answer changes no status."
+                        },
+                        "verificationRecordLastSeenAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time",
+                          "description": "When DNS last answered the lookup of the verification record. Null before the first answer, and after a lookup that got no answer while the domain ownership was not verified. A verified domain ownership keeps this answer when a lookup gets no answer."
+                        },
+                        "verificationRecordPresent": {
+                          "description": "Whether that answer carried the workspace's value. Null when there is no answer.",
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "verificationRecordSyncError": {
+                          "description": "The error from the last sync of the verification record, such as `DNS unavailable`. Null when that sync succeeded. For display only.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         },
                         "createdAt": {
                           "type": "string",
@@ -19992,7 +20019,10 @@
                         "workspaceId",
                         "domain",
                         "verification",
-                        "verifiedAt",
+                        "status",
+                        "verificationRecordLastSeenAt",
+                        "verificationRecordPresent",
+                        "verificationRecordSyncError",
                         "createdAt"
                       ]
                     }
@@ -20174,10 +20204,294 @@
       "delete": {
         "operationId": "deleteV1Domain-ownershipsByDomainOwnershipId",
         "summary": "Delete a domain ownership",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRemoves the workspace's record that it owns the domain. The verification record in DNS is not changed.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRemoves the domain ownership, verified or pending. The verification record in DNS is not changed.",
         "responses": {
           "204": {
             "description": "Domain ownership deleted."
+          },
+          "400": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "data": {}
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Domain ownership not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-prisma-stability": "experimental",
+        "tags": [
+          "[Experimental]"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domainOwnershipId",
+            "schema": {
+              "type": "string",
+              "pattern": "^(do_)?([cC][^\\s-]{8,}|[a-z0-9]+)$"
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    "/v1/domain-ownerships/{domainOwnershipId}/verify": {
+      "post": {
+        "operationId": "postV1Domain-ownershipsByDomainOwnershipIdVerify",
+        "summary": "Verify a domain ownership",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nLooks up the domain's verification record now and returns the domain ownership with the answer. The same answer updates every domain ownership whose verification record has the same name, in every workspace. When DNS gives no answer, no `status` changes, a verified domain ownership keeps its last answer, the others have it emptied, `verificationRecordSyncError` says why, and the platform checks again later.",
+        "responses": {
+          "200": {
+            "description": "The domain ownership with the answer DNS gave. When DNS gave none, it is returned with its `status` unchanged, and with its last answer emptied unless it is verified.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^(do_)([cC][^\\s-]{8,}|[a-z0-9]+)$"
+                        },
+                        "type": {
+                          "type": "string",
+                          "const": "domainOwnership"
+                        },
+                        "workspaceId": {
+                          "type": "string",
+                          "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$",
+                          "description": "The workspace the domain ownership belongs to."
+                        },
+                        "domain": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "verified",
+                            "grandfathered"
+                          ],
+                          "description": "`verified` when the last answer from DNS carried the workspace's value, and `pending` when it did not. `grandfathered` is a custom domain that existed before domain ownerships were checked; it stays grandfathered without the record until DNS carries another workspace's value for the domain. A lookup that gets no answer changes no status."
+                        },
+                        "verificationRecordLastSeenAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time",
+                          "description": "When DNS last answered the lookup of the verification record. Null before the first answer, and after a lookup that got no answer while the domain ownership was not verified. A verified domain ownership keeps this answer when a lookup gets no answer."
+                        },
+                        "verificationRecordPresent": {
+                          "description": "Whether that answer carried the workspace's value. Null when there is no answer.",
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "verificationRecordSyncError": {
+                          "description": "The error from the last sync of the verification record, such as `DNS unavailable`. Null when that sync succeeded. For display only.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "workspaceId",
+                        "domain",
+                        "verification",
+                        "status",
+                        "verificationRecordLastSeenAt",
+                        "verificationRecordPresent",
+                        "verificationRecordSyncError",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation Error",
@@ -40737,11 +41051,11 @@
     "/v1/workspaces/{workspaceId}/domain-ownerships": {
       "post": {
         "operationId": "postV1WorkspacesByWorkspaceIdDomain-ownerships",
-        "summary": "Prove the workspace owns a domain",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nLooks up the domain's verification record and records the workspace's domain ownership when the record carries the workspace's value. A domain the workspace already owns is returned as it is, without a lookup. Read the record to publish from `GET /v1/workspaces/{workspaceId}/domain-ownerships/verification`, or from the 422 this route returns while the record is missing.",
+        "summary": "Create a domain ownership",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nRecords that the workspace intends to own the domain, looks up its verification record, and returns the domain ownership, verified when the record carries the workspace's value and pending otherwise. Publish the record in `verification`, then verify the domain ownership to complete it. When DNS gives no answer, the status is empty and the platform checks again later. The lookup also updates the other domain ownerships whose verification record has the same name, in every workspace. A domain the workspace already holds is checked again and returned.",
         "responses": {
           "200": {
-            "description": "The workspace already owns the domain.",
+            "description": "The workspace already holds a domain ownership for the domain.",
             "content": {
               "application/json": {
                 "schema": {
@@ -40761,7 +41075,7 @@
                         "workspaceId": {
                           "type": "string",
                           "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                          "description": "The workspace that proved it owns the domain."
+                          "description": "The workspace the domain ownership belongs to."
                         },
                         "domain": {
                           "type": "string"
@@ -40793,9 +41107,36 @@
                             "ttl"
                           ]
                         },
-                        "verifiedAt": {
+                        "status": {
                           "type": "string",
-                          "format": "date-time"
+                          "enum": [
+                            "pending",
+                            "verified",
+                            "grandfathered"
+                          ],
+                          "description": "`verified` when the last answer from DNS carried the workspace's value, and `pending` when it did not. `grandfathered` is a custom domain that existed before domain ownerships were checked; it stays grandfathered without the record until DNS carries another workspace's value for the domain. A lookup that gets no answer changes no status."
+                        },
+                        "verificationRecordLastSeenAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time",
+                          "description": "When DNS last answered the lookup of the verification record. Null before the first answer, and after a lookup that got no answer while the domain ownership was not verified. A verified domain ownership keeps this answer when a lookup gets no answer."
+                        },
+                        "verificationRecordPresent": {
+                          "description": "Whether that answer carried the workspace's value. Null when there is no answer.",
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "verificationRecordSyncError": {
+                          "description": "The error from the last sync of the verification record, such as `DNS unavailable`. Null when that sync succeeded. For display only.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         },
                         "createdAt": {
                           "type": "string",
@@ -40808,7 +41149,10 @@
                         "workspaceId",
                         "domain",
                         "verification",
-                        "verifiedAt",
+                        "status",
+                        "verificationRecordLastSeenAt",
+                        "verificationRecordPresent",
+                        "verificationRecordSyncError",
                         "createdAt"
                       ]
                     }
@@ -40821,7 +41165,7 @@
             }
           },
           "201": {
-            "description": "The verification record was found and the domain ownership was recorded.",
+            "description": "The domain ownership was created, verified or pending.",
             "content": {
               "application/json": {
                 "schema": {
@@ -40841,7 +41185,7 @@
                         "workspaceId": {
                           "type": "string",
                           "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                          "description": "The workspace that proved it owns the domain."
+                          "description": "The workspace the domain ownership belongs to."
                         },
                         "domain": {
                           "type": "string"
@@ -40873,9 +41217,36 @@
                             "ttl"
                           ]
                         },
-                        "verifiedAt": {
+                        "status": {
                           "type": "string",
-                          "format": "date-time"
+                          "enum": [
+                            "pending",
+                            "verified",
+                            "grandfathered"
+                          ],
+                          "description": "`verified` when the last answer from DNS carried the workspace's value, and `pending` when it did not. `grandfathered` is a custom domain that existed before domain ownerships were checked; it stays grandfathered without the record until DNS carries another workspace's value for the domain. A lookup that gets no answer changes no status."
+                        },
+                        "verificationRecordLastSeenAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time",
+                          "description": "When DNS last answered the lookup of the verification record. Null before the first answer, and after a lookup that got no answer while the domain ownership was not verified. A verified domain ownership keeps this answer when a lookup gets no answer."
+                        },
+                        "verificationRecordPresent": {
+                          "description": "Whether that answer carried the workspace's value. Null when there is no answer.",
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "verificationRecordSyncError": {
+                          "description": "The error from the last sync of the verification record, such as `DNS unavailable`. Null when that sync succeeded. For display only.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         },
                         "createdAt": {
                           "type": "string",
@@ -40888,7 +41259,10 @@
                         "workspaceId",
                         "domain",
                         "verification",
-                        "verifiedAt",
+                        "status",
+                        "verificationRecordLastSeenAt",
+                        "verificationRecordPresent",
+                        "verificationRecordSyncError",
                         "createdAt"
                       ]
                     }
@@ -41112,68 +41486,7 @@
             }
           },
           "422": {
-            "description": "The domain is not a hostname or a wildcard of the form `*.example.com`, or its verification record was not found. In the second case `error.code` is `domain-ownership-required` and `error.verification` holds the TXT record to publish before retrying.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "hint": {
-                          "type": "string"
-                        },
-                        "verification": {
-                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "const": "TXT"
-                            },
-                            "name": {
-                              "type": "string",
-                              "description": "DNS record name to publish."
-                            },
-                            "value": {
-                              "type": "string",
-                              "description": "DNS record value to publish."
-                            },
-                            "ttl": {
-                              "type": "integer",
-                              "description": "Suggested TTL in seconds."
-                            }
-                          },
-                          "required": [
-                            "type",
-                            "name",
-                            "value",
-                            "ttl"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "code",
-                        "message"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "DNS verification is temporarily unavailable.",
+            "description": "The domain is not a hostname or a wildcard of the form `*.example.com`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -41271,7 +41584,7 @@
       "get": {
         "operationId": "getV1WorkspacesByWorkspaceIdDomain-ownerships",
         "summary": "List domain ownerships",
-        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nReturns the domains the workspace has proved it owns, ordered by id.",
+        "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nReturns the workspace's domain ownerships, verified and pending, ordered by id.",
         "responses": {
           "200": {
             "description": "The workspace's domain ownerships.",
@@ -41296,7 +41609,7 @@
                           "workspaceId": {
                             "type": "string",
                             "pattern": "^(wksp_)([cC][^\\s-]{8,}|[a-z0-9]+)$",
-                            "description": "The workspace that proved it owns the domain."
+                            "description": "The workspace the domain ownership belongs to."
                           },
                           "domain": {
                             "type": "string"
@@ -41328,9 +41641,36 @@
                               "ttl"
                             ]
                           },
-                          "verifiedAt": {
+                          "status": {
                             "type": "string",
-                            "format": "date-time"
+                            "enum": [
+                              "pending",
+                              "verified",
+                              "grandfathered"
+                            ],
+                            "description": "`verified` when the last answer from DNS carried the workspace's value, and `pending` when it did not. `grandfathered` is a custom domain that existed before domain ownerships were checked; it stays grandfathered without the record until DNS carries another workspace's value for the domain. A lookup that gets no answer changes no status."
+                          },
+                          "verificationRecordLastSeenAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time",
+                            "description": "When DNS last answered the lookup of the verification record. Null before the first answer, and after a lookup that got no answer while the domain ownership was not verified. A verified domain ownership keeps this answer when a lookup gets no answer."
+                          },
+                          "verificationRecordPresent": {
+                            "description": "Whether that answer carried the workspace's value. Null when there is no answer.",
+                            "type": [
+                              "boolean",
+                              "null"
+                            ]
+                          },
+                          "verificationRecordSyncError": {
+                            "description": "The error from the last sync of the verification record, such as `DNS unavailable`. Null when that sync succeeded. For display only.",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           },
                           "createdAt": {
                             "type": "string",
@@ -41343,7 +41683,10 @@
                           "workspaceId",
                           "domain",
                           "verification",
-                          "verifiedAt",
+                          "status",
+                          "verificationRecordLastSeenAt",
+                          "verificationRecordPresent",
+                          "verificationRecordSyncError",
                           "createdAt"
                         ]
                       }
