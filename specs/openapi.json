@@ -21272,6 +21272,67 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limit exceeded.",
             "content": {
@@ -22093,6 +22154,67 @@
                 }
               }
             }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "x-prisma-stability": "experimental",
@@ -22710,6 +22832,67 @@
           },
           "404": {
             "description": "Database with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -23588,6 +23771,67 @@
           },
           "404": {
             "description": "Connection with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -27172,6 +27416,67 @@
           },
           "404": {
             "description": "Database with the given ID was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -40569,6 +40874,67 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "Invalid request.",
             "content": {
@@ -41236,6 +41602,67 @@
           },
           "404": {
             "description": "Variable not found, or token does not have access to it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
@@ -46521,6 +46948,67 @@
               }
             }
           },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation failed (e.g. malformed workspaceId or unsupported provider).",
             "content": {
@@ -47311,6 +47799,67 @@
           },
           "409": {
             "description": "Repository or project already linked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds this endpoint's size cap.",
             "content": {
               "application/json": {
                 "schema": {
