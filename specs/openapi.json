@@ -22215,6 +22215,67 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The domain ownership's new status was saved, but the platform could not queue the work that updates the custom domains it covers. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         },
         "x-prisma-stability": "experimental",
@@ -44023,6 +44084,67 @@
           },
           "422": {
             "description": "The domain is not a hostname or a wildcard of the form `*.example.com`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The domain ownership was saved with its status, but the platform could not queue the work that updates the custom domains it covers. Retry the request; it returns the domain ownership with 200.",
             "content": {
               "application/json": {
                 "schema": {
