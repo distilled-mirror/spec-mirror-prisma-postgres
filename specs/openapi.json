@@ -51656,6 +51656,67 @@
               }
             }
           },
+          "409": {
+            "description": "The user has reached the daily limit of new workspaces.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "hint": {
+                          "type": "string"
+                        },
+                        "verification": {
+                          "description": "DNS record the caller must publish before retrying. Present on `domain-ownership-required` errors.",
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "TXT"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "DNS record name to publish."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "DNS record value to publish."
+                            },
+                            "ttl": {
+                              "type": "integer",
+                              "description": "Suggested TTL in seconds."
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "name",
+                            "value",
+                            "ttl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "413": {
             "description": "Request body exceeds this endpoint's size cap.",
             "content": {
