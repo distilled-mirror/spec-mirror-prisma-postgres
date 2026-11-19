@@ -2669,7 +2669,7 @@
         "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `POST /v1/services/{serviceId}/promote` instead.\n\nPromotes a deployment to be the active deployment behind the app's stable endpoint. The deployment must be running. Returns the app endpoint domain.",
         "responses": {
           "200": {
-            "description": "Deployment promoted to app endpoint. The `reassignedDomains` field indicates how many custom domains were moved from the previously-promoted deployment to the new one.",
+            "description": "Deployment promoted to app endpoint. The `reassignedDomains` field counts the app's custom hostnames that were synced during the request. A hostname whose certificate is still being issued moves to the new deployment once issuance finishes, and one whose sync failed is retried shortly after.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3200,7 +3200,7 @@
         "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nDeprecated: use `POST /v1/services/{serviceId}/rollback` instead.\n\nMakes any eligible existing deployment live behind the app's stable endpoint (rollback or roll-forward). Unlike promote, a stopped target is started and waited until it is running before the endpoint is switched, so the currently-live deployment keeps serving with zero downtime. Returns the app endpoint domain.",
         "responses": {
           "200": {
-            "description": "Deployment made live behind the app endpoint. The `reassignedDomains` field indicates how many custom domains were moved from the previously-live deployment to the new one.",
+            "description": "Deployment made live behind the app endpoint. The `reassignedDomains` field counts the app's custom hostnames that were synced during the request. A hostname whose certificate is still being issued moves to the new deployment once issuance finishes, and one whose sync failed is retried shortly after.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8438,7 +8438,7 @@
         "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nPromotes a deployment to be the active deployment behind the service's stable endpoint. The deployment must be running. Returns the service endpoint domain.",
         "responses": {
           "200": {
-            "description": "Deployment promoted to service endpoint. The `reassignedDomains` field indicates how many custom domains were moved from the previously-promoted deployment to the new one.",
+            "description": "Deployment promoted to service endpoint. The `reassignedDomains` field counts the service's custom hostnames that were synced during the request. A hostname whose certificate is still being issued moves to the new deployment once issuance finishes, and one whose sync failed is retried shortly after.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8968,7 +8968,7 @@
         "description": "⚠️ Experimental endpoint: this API is in active development and may change at any time without notice. ⚠️\n\nMakes any eligible existing deployment live behind the service's stable endpoint (rollback or roll-forward). Unlike promote, a stopped target is started and waited until it is running before the endpoint is switched, so the currently-live deployment keeps serving with zero downtime. Returns the service endpoint domain.",
         "responses": {
           "200": {
-            "description": "Deployment made live behind the service endpoint. The `reassignedDomains` field indicates how many custom domains were moved from the previously-live deployment to the new one.",
+            "description": "Deployment made live behind the service endpoint. The `reassignedDomains` field counts the service's custom hostnames that were synced during the request. A hostname whose certificate is still being issued moves to the new deployment once issuance finishes, and one whose sync failed is retried shortly after.",
             "content": {
               "application/json": {
                 "schema": {
