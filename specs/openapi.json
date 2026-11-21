@@ -11803,7 +11803,23 @@
                             "pending",
                             "active"
                           ],
-                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "not_verified",
+                            "no_service",
+                            "no_live_deployment",
+                            "update_failed",
+                            "in_use_elsewhere",
+                            "waiting_for_dns",
+                            "provisioning_certificate",
+                            "certificate_failed",
+                            "updating",
+                            "active"
+                          ],
+                          "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                         },
                         "conditions": {
                           "type": "object",
@@ -11934,7 +11950,7 @@
                               "ttl"
                             ]
                           },
-                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                         },
                         "heldBy": {
                           "type": [
@@ -12102,6 +12118,7 @@
                         "hostname",
                         "logicalId",
                         "status",
+                        "state",
                         "conditions",
                         "firstUnmetCondition",
                         "ownershipExpiry",
@@ -12274,7 +12291,7 @@
             }
           },
           "409": {
-            "description": "The service has reached its hostname quota (`quota-exceeded`), or another live RoutingUrl on the Branch has this `logicalId`.",
+            "description": "The service has reached its hostname quota (`quota-exceeded`), or another live RoutingUrl on the Branch has this `logicalId` (`logical-id-taken`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -12284,7 +12301,11 @@
                       "type": "object",
                       "properties": {
                         "code": {
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "quota-exceeded",
+                            "logical-id-taken"
+                          ]
                         },
                         "message": {
                           "type": "string"
@@ -12396,7 +12417,7 @@
             }
           },
           "422": {
-            "description": "The hostname is invalid, or the service is not on a Branch.",
+            "description": "The request body is invalid (`validation-error`), the hostname is invalid (`invalid-hostname`), or the service is not on a Branch (`service-not-on-a-branch`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -12406,7 +12427,12 @@
                       "type": "object",
                       "properties": {
                         "code": {
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "validation-error",
+                            "invalid-hostname",
+                            "service-not-on-a-branch"
+                          ]
                         },
                         "message": {
                           "type": "string"
@@ -12617,7 +12643,23 @@
                               "pending",
                               "active"
                             ],
-                            "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                            "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "not_verified",
+                              "no_service",
+                              "no_live_deployment",
+                              "update_failed",
+                              "in_use_elsewhere",
+                              "waiting_for_dns",
+                              "provisioning_certificate",
+                              "certificate_failed",
+                              "updating",
+                              "active"
+                            ],
+                            "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                           },
                           "conditions": {
                             "type": "object",
@@ -12748,7 +12790,7 @@
                                 "ttl"
                               ]
                             },
-                            "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                            "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                           },
                           "heldBy": {
                             "type": [
@@ -12916,6 +12958,7 @@
                           "hostname",
                           "logicalId",
                           "status",
+                          "state",
                           "conditions",
                           "firstUnmetCondition",
                           "ownershipExpiry",
@@ -38606,7 +38649,23 @@
                               "pending",
                               "active"
                             ],
-                            "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                            "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "not_verified",
+                              "no_service",
+                              "no_live_deployment",
+                              "update_failed",
+                              "in_use_elsewhere",
+                              "waiting_for_dns",
+                              "provisioning_certificate",
+                              "certificate_failed",
+                              "updating",
+                              "active"
+                            ],
+                            "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                           },
                           "conditions": {
                             "type": "object",
@@ -38737,7 +38796,7 @@
                                 "ttl"
                               ]
                             },
-                            "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                            "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                           },
                           "heldBy": {
                             "type": [
@@ -38905,6 +38964,7 @@
                           "hostname",
                           "logicalId",
                           "status",
+                          "state",
                           "conditions",
                           "firstUnmetCondition",
                           "ownershipExpiry",
@@ -48931,7 +48991,23 @@
                             "pending",
                             "active"
                           ],
-                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "not_verified",
+                            "no_service",
+                            "no_live_deployment",
+                            "update_failed",
+                            "in_use_elsewhere",
+                            "waiting_for_dns",
+                            "provisioning_certificate",
+                            "certificate_failed",
+                            "updating",
+                            "active"
+                          ],
+                          "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                         },
                         "conditions": {
                           "type": "object",
@@ -49062,7 +49138,7 @@
                               "ttl"
                             ]
                           },
-                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                         },
                         "heldBy": {
                           "type": [
@@ -49230,6 +49306,7 @@
                         "hostname",
                         "logicalId",
                         "status",
+                        "state",
                         "conditions",
                         "firstUnmetCondition",
                         "ownershipExpiry",
@@ -49529,7 +49606,23 @@
                             "pending",
                             "active"
                           ],
-                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "not_verified",
+                            "no_service",
+                            "no_live_deployment",
+                            "update_failed",
+                            "in_use_elsewhere",
+                            "waiting_for_dns",
+                            "provisioning_certificate",
+                            "certificate_failed",
+                            "updating",
+                            "active"
+                          ],
+                          "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                         },
                         "conditions": {
                           "type": "object",
@@ -49660,7 +49753,7 @@
                               "ttl"
                             ]
                           },
-                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                         },
                         "heldBy": {
                           "type": [
@@ -49828,6 +49921,7 @@
                         "hostname",
                         "logicalId",
                         "status",
+                        "state",
                         "conditions",
                         "firstUnmetCondition",
                         "ownershipExpiry",
@@ -50000,7 +50094,7 @@
             }
           },
           "409": {
-            "description": "The new service has reached its hostname quota (`quota-exceeded`), or another live RoutingUrl on the Branch has this `logicalId`.",
+            "description": "The new service has reached its hostname quota (`quota-exceeded`), or another live RoutingUrl on the Branch has this `logicalId` (`logical-id-taken`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -50010,7 +50104,11 @@
                       "type": "object",
                       "properties": {
                         "code": {
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "quota-exceeded",
+                            "logical-id-taken"
+                          ]
                         },
                         "message": {
                           "type": "string"
@@ -50122,7 +50220,7 @@
             }
           },
           "422": {
-            "description": "The hostname is invalid, or the service is on another Branch.",
+            "description": "The request body is invalid (`validation-error`), the hostname is invalid (`invalid-hostname`), or the service is on another Branch (`service-on-another-branch`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -50132,7 +50230,12 @@
                       "type": "object",
                       "properties": {
                         "code": {
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "validation-error",
+                            "invalid-hostname",
+                            "service-on-another-branch"
+                          ]
                         },
                         "message": {
                           "type": "string"
@@ -50650,7 +50753,23 @@
                             "pending",
                             "active"
                           ],
-                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met."
+                          "description": "`pending` until every condition is met, then `active`. An active RoutingUrl stays active when its service's live deployment changes. It goes back to `pending` when its hostname changes, its service is deleted, or no covering domain ownership keeps its ownership met. It records that the hostname went live; `state` says what it does now."
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "not_verified",
+                            "no_service",
+                            "no_live_deployment",
+                            "update_failed",
+                            "in_use_elsewhere",
+                            "waiting_for_dns",
+                            "provisioning_certificate",
+                            "certificate_failed",
+                            "updating",
+                            "active"
+                          ],
+                          "description": "What the hostname is doing now, in one value, worked out on read from what is stored. No part of the platform acts on it: it is for choosing what to show and what to wait for. It can differ from `status`, which records that the hostname once went live. To wait for the hostname to serve, wait for `active`. The first that applies is the state:\n- `not_verified`: the hostname's ownership is not met. Publish the TXT record in `records`, then call `POST /v1/urls/{id}/check`. When the workspace has no domain ownership that covers the hostname, create one first with `POST /v1/workspaces/{workspaceId}/domain-ownerships`: check creates none.\n- `no_service`: the hostname's service is deleted.\n- `no_live_deployment`: the service has no live deployment. Deploy the service, or promote one of its deployments.\n- `update_failed`: the last attempt to bring the hostname up to date failed. `customDomainSyncError` says why, and it is retried.\n- `in_use_elsewhere`: another RoutingUrl, which can be on the same service, holds this hostname. `heldBy` names its service when you can access its workspace, and says \"held by another workspace\" otherwise. This RoutingUrl takes the hostname over with no action once the other one gives it up.\n- `waiting_for_dns`: the hostname's DNS does not point where it should. Publish the CNAME record in `records`, then call `POST /v1/urls/{id}/check`.\n- `provisioning_certificate`: the hostname's certificate is being issued.\n- `certificate_failed`: the certificate could not be issued. `customDomain.failureReason` says why; `POST /v1/urls/{id}/check` retries it.\n- `updating`: the hostname is being brought up to date, for example onto the service's new live deployment.\n- `active`: the hostname serves the service's live deployment with an active certificate."
                         },
                         "conditions": {
                           "type": "object",
@@ -50781,7 +50900,7 @@
                               "ttl"
                             ]
                           },
-                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met."
+                          "description": "The DNS records still to publish. The TXT record is listed while ownership is not met, and while only an `expiring` domain ownership keeps it met. While ownership is not met it is the record of the domain ownership for the exact hostname, otherwise that of a wildcard domain ownership that covers it, otherwise the exact hostname's."
                         },
                         "heldBy": {
                           "type": [
@@ -50949,6 +51068,7 @@
                         "hostname",
                         "logicalId",
                         "status",
+                        "state",
                         "conditions",
                         "firstUnmetCondition",
                         "ownershipExpiry",
